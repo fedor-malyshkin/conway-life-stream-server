@@ -1,0 +1,97 @@
+ext {
+	// scala
+	SCALA_VER = '2.12'
+	SCALA_LIBRARY_VER = '2.12.6'
+//	CATS_VER = '1.5.0-RC1'
+//	CATS_EFFECT_VER = '1.0.0'
+
+	// akka
+	AKKA_VER = '2.5.21'
+	AKKA_QUARTS_VER = '1.8.0-akka-2.5.x'
+
+	// misc
+	SPRAY_JSON_VER = '1.3.5'
+
+// logging
+	SLF4J_VER = '1.7.28'
+	LOGBACK_VER = '1.2.3'
+
+// test scala
+	SCALA_TEST_VER = '3.0.5'
+	PEGDOWN_SCALA_TEST_VER = '1.6.0'
+	SCALA_MOCK_VER = '4.1.0'
+
+}
+
+
+// project dependencies
+buildscript {
+	repositories {
+		mavenCentral()
+		jcenter()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+
+	dependencies {
+		// scalatest plugin
+		classpath "gradle.plugin.com.github.maiflai:gradle-scalatest:0.19"
+	}
+}
+
+apply plugin: 'scala'
+// apply plugin: "com.github.maiflai.scalatest"
+
+repositories {
+	mavenCentral()
+	mavenLocal()
+}
+
+// because we have mixed sources we need adjust sources to java and scala compiler
+// see: https://chrismarks.wordpress.com/2013/07/31/compiling-a-mixed-scala-project-with-gradle/
+/*
+sourceSets.main.scala.srcDir "src/main/java"
+sourceSets.main.java.srcDirs = []
+sourceSets.test.scala.srcDir "src/test/java"
+sourceSets.test.java.srcDirs = []
+*/
+
+// we disabled junit-test replacement (see 'com.github.maiflai.gradle-scalatest.mode' in gradle.properties)
+/*
+task allTests {
+	dependsOn test
+	dependsOn scalatest
+}
+*/
+
+dependencies {
+	implementation "org.scala-lang:scala-library:${SCALA_LIBRARY_VER}"
+	// Akka
+	implementation group: 'com.typesafe.akka', name: "akka-stream_${SCALA_VER}", version: AKKA_VER
+	testImplementation "com.typesafe.akka:akka-testkit_${SCALA_VER}:${AKKA_VER}"
+
+	// Cats
+//	implementation "org.typelevel:cats-core_${SCALA_VER}:${CATS_VER}"
+//	implementation "org.typelevel:cats-effect_${SCALA_VER}:${CATS_EFFECT_VER}"
+
+	// misc
+	implementation "com.enragedginger:akka-quartz-scheduler_${SCALA_VER}:${AKKA_QUARTS_VER}"
+	implementation "io.spray:spray-json_${SCALA_VER}:${SPRAY_JSON_VER}"
+
+	// testing (scala)
+	testImplementation "org.scalatest:scalatest_${SCALA_VER}:${SCALA_TEST_VER}"
+	testRuntime "org.pegdown:pegdown:${PEGDOWN_SCALA_TEST_VER}"
+	testImplementation "org.scalamock:scalamock_${SCALA_VER}:${SCALA_MOCK_VER}"
+
+}
+
+
+test {
+	useJUnitPlatform {
+		includeEngines 'junit-jupiter'
+	}
+	maxHeapSize = '500m'
+	// reports.html.enabled = false
+//	useTestNG ()
+}

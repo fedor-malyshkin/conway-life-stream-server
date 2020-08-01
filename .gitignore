@@ -1,0 +1,17 @@
+/*.*~
+/.gradle
+/*.log
+/.emacs.desktop
+/.emacs.desktop.lock
+/.settings
+/output
+/target
+/bin
+/build
+/.apt_generated/
+*.factorypath
+/.classpath
+/.project
+/.idea
+/*.iml
+/logs
