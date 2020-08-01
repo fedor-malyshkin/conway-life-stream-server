@@ -41,29 +41,12 @@ buildscript {
 }
 
 apply plugin: 'scala'
-// apply plugin: "com.github.maiflai.scalatest"
+apply plugin: "com.github.maiflai.scalatest"
 
 repositories {
 	mavenCentral()
 	mavenLocal()
 }
-
-// because we have mixed sources we need adjust sources to java and scala compiler
-// see: https://chrismarks.wordpress.com/2013/07/31/compiling-a-mixed-scala-project-with-gradle/
-/*
-sourceSets.main.scala.srcDir "src/main/java"
-sourceSets.main.java.srcDirs = []
-sourceSets.test.scala.srcDir "src/test/java"
-sourceSets.test.java.srcDirs = []
-*/
-
-// we disabled junit-test replacement (see 'com.github.maiflai.gradle-scalatest.mode' in gradle.properties)
-/*
-task allTests {
-	dependsOn test
-	dependsOn scalatest
-}
-*/
 
 dependencies {
 	implementation "org.scala-lang:scala-library:${SCALA_LIBRARY_VER}"
@@ -81,17 +64,7 @@ dependencies {
 
 	// testing (scala)
 	testImplementation "org.scalatest:scalatest_${SCALA_VER}:${SCALA_TEST_VER}"
-	testRuntime "org.pegdown:pegdown:${PEGDOWN_SCALA_TEST_VER}"
+//	testRuntime "org.pegdown:pegdown:${PEGDOWN_SCALA_TEST_VER}"
 	testImplementation "org.scalamock:scalamock_${SCALA_VER}:${SCALA_MOCK_VER}"
 
-}
-
-
-test {
-	useJUnitPlatform {
-		includeEngines 'junit-jupiter'
-	}
-	maxHeapSize = '500m'
-	// reports.html.enabled = false
-//	useTestNG ()
 }
