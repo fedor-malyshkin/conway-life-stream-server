@@ -19,7 +19,6 @@ ext {
 
 // test scala
 	SCALA_TEST_VER = '3.2.0'
-	PEGDOWN_SCALA_TEST_VER = '1.6.0'
 	SCALA_MOCK_VER = '5.0.0'
 
 }
@@ -37,7 +36,7 @@ buildscript {
 
 	dependencies {
 		// scalatest plugin
-		classpath "gradle.plugin.com.github.maiflai:gradle-scalatest:0.19"
+		classpath "gradle.plugin.com.github.maiflai:gradle-scalatest:0.26"
 	}
 }
 
@@ -53,6 +52,7 @@ dependencies {
 	implementation "org.scala-lang:scala-library:${SCALA_LIBRARY_VER}"
 	// Akka
 	implementation "com.typesafe.akka:akka-actor-typed_${SCALA_VER}:${AKKA_VER}"
+	implementation "com.typesafe.akka:akka-stream-typed_${SCALA_VER}:${AKKA_VER}"
 	implementation "com.typesafe.akka:akka-http_${SCALA_VER}:${AKKA_HTTP_VER}"
 	testImplementation "com.typesafe.akka:akka-actor-testkit-typed_${SCALA_VER}:${AKKA_VER}"
 
@@ -66,7 +66,6 @@ dependencies {
 
 	// testing (scala)
 	testImplementation "org.scalatest:scalatest_${SCALA_VER}:${SCALA_TEST_VER}"
-//	testRuntime "org.pegdown:pegdown:${PEGDOWN_SCALA_TEST_VER}"
 	testImplementation "org.scalamock:scalamock_${SCALA_VER}:${SCALA_MOCK_VER}"
-
+	testImplementation 'com.vladsch.flexmark:flexmark-all:0.35.10'
 }

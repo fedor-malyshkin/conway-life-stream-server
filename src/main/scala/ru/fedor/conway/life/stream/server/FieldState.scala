@@ -4,22 +4,20 @@ import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import akka.actor.typed.{Behavior, PostStop, Signal}
 
 
-object FieldSupervisor {
+object FieldState {
   def apply(): Behavior[Nothing] =
-    Behaviors.setup[Nothing](context => new FieldSupervisor(context))
+    Behaviors.setup[Nothing](context => new FieldState(context))
 }
 
-class FieldSupervisor(context: ActorContext[Nothing]) extends AbstractBehavior[Nothing](context) {
-  context.log.info(s"$Server.SERVER_NAME started")
-
+class FieldState(context: ActorContext[Nothing]) extends AbstractBehavior[Nothing](context) {
 
   override def onMessage(msg: Nothing): Behavior[Nothing] = {
+    // No need to handle any messages
     Behaviors.unhandled
   }
 
   override def onSignal: PartialFunction[Signal, Behavior[Nothing]] = {
     case PostStop =>
-      context.log.info(s"$Server.SERVER_NAME stopped")
       this
   }
 }
