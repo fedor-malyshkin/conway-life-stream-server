@@ -1,14 +1,12 @@
 name: ci-cd
 
-on: 
+on:
   push:
   pull_request:
 
-defaults:
-  runs-on: ubuntu-18.04
-
 jobs:
   build-test-deploy:
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - name: set-up-jdk
@@ -34,7 +32,7 @@ jobs:
 #      - name: run-tests
 #        run: ./gradlew scalatest
       - name: build-docker-image
-        if: ${{ success }}
+        if: ${{ success() }}
         uses: docker/build-push-action@v1
         with:
           push: false # !!!
