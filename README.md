@@ -2,8 +2,9 @@
 Conway's Game of Life Streaming Server (Akka implementation)
 
 
-## Actor hierarchy
-* FieldSupervisor (1..1)
-    * FieldState (1..1)
+## Actors' hierarchy
+* FieldSupervisor (1)
+    * FieldState (1)
+    * Field (1) 
         * Cell (1..*)
     

@@ -1,23 +1,23 @@
-name: ci
+name: ci-cd
 
 on: 
   push:
   pull_request:
 
+defaults:
+  runs-on: ubuntu-18.04
+
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  build-test-deploy:
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
+      - name: set-up-jdk
         uses: actions/setup-java@v1
         with:
           java-version: '11' # The JDK version to make available on the path.
           java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
           architecture: x64 # (x64 or x86) - defaults to x64
-      - name: Cache local repository
+      - name: cache-local-repository
         uses: actions/cache@v2
         with:
           path: |
@@ -27,9 +27,20 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Grant execute permission for gradlew
+      - name: grant-execute-permission-for-gradlew
         run: chmod +x gradlew
-      - name: Build with Gradle
+      - name: build-with-gradle
         run: ./gradlew build
-      - name: Run ScalaTest
-        run: ./gradlew scalatest
+#      - name: run-tests
+#        run: ./gradlew scalatest
+      - name: build-docker-image
+        if: ${{ success }}
+        uses: docker/build-push-action@v1
+        with:
+          push: false # !!!
+          dockerfile: docker/Dockerfile
+          path: build/libs
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: myorg/myrepository
+          tag_with_ref: true

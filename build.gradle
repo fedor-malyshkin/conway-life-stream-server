@@ -37,10 +37,13 @@ buildscript {
 	dependencies {
 		// scalatest plugin
 		classpath "gradle.plugin.com.github.maiflai:gradle-scalatest:0.26"
+		// shadow-plugin (http://imperceptiblethoughts.com/shadow/)
+		classpath 'com.github.jengelman.gradle.plugins:shadow:6.0.0'
 	}
 }
 
 apply plugin: 'scala'
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: "com.github.maiflai.scalatest"
 
 repositories {
@@ -69,3 +72,17 @@ dependencies {
 	testImplementation "org.scalamock:scalamock_${SCALA_VER}:${SCALA_MOCK_VER}"
 	testImplementation 'com.vladsch.flexmark:flexmark-all:0.35.10'
 }
+
+
+def mainClassName = "ru.fedor.conway.life.stream.server.Server"
+
+shadowJar {
+	append 'reference.conf'
+	mergeServiceFiles()
+	manifest {
+		attributes 'Description': 'This is an application JAR'
+		attributes 'Main-Class': mainClassName
+	}
+}
+
+build.dependsOn('shadowJar')
