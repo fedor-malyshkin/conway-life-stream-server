@@ -35,10 +35,10 @@ jobs:
         if: ${{ success() }}
         uses: docker/build-push-action@v1
         with:
-          push: false # !!!
+          push: true
           dockerfile: docker/Dockerfile
           path: build/libs
-#          username: ${{ secrets.DOCKER_USERNAME }}
-#          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: myorg/myrepository
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: fedormalyshkin/conway-life-stream-server
           tag_with_ref: true
