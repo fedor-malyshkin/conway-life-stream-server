@@ -2,7 +2,6 @@ name: ci-cd
 
 on:
   push:
-  pull_request:
 
 jobs:
   build-test-deploy:
@@ -30,9 +29,9 @@ jobs:
       - name: build-with-gradle
         run: ./gradlew build
       - name: run-tests
-        run: ./gradlew scalatest
-      - name: build-and-push-docker-image
-        if: ${{ success() }}
+#        run: ./gradlew scalatest
+#      - name: build-and-push-docker-image
+        if: ${{ success() && github.ref = 'master' }}
         uses: docker/build-push-action@v1
         with:
           push: true
