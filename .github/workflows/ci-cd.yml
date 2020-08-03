@@ -1,0 +1,43 @@
+name: ci-cd
+
+on:
+  push:
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: set-up-jdk
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11' # The JDK version to make available on the path.
+          java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
+          architecture: x64 # (x64 or x86) - defaults to x64
+      - name: cache-local-repository
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: grant-execute-permission-for-gradlew
+        run: chmod +x gradlew
+      - name: build-with-gradle
+        run: ./gradlew build
+      - name: run-tests
+#        run: ./gradlew scalatest
+#      - name: build-and-push-docker-image
+        if: ${{ success() && github.ref == 'master' }}
+        uses: docker/build-push-action@v1
+        with:
+          push: true
+          dockerfile: docker/Dockerfile
+          path: build/libs
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: fedormalyshkin/conway-life-stream-server
+          tag_with_ref: true
