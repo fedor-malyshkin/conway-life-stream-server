@@ -29,9 +29,9 @@ jobs:
         run: chmod +x gradlew
       - name: build-with-gradle
         run: ./gradlew build
-#      - name: run-tests
-#        run: ./gradlew scalatest
-      - name: build-docker-image
+      - name: run-tests
+        run: ./gradlew scalatest
+      - name: build-and-push-docker-image
         if: ${{ success() }}
         uses: docker/build-push-action@v1
         with:
