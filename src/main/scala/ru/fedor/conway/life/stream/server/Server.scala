@@ -7,8 +7,6 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Directives.{complete, path}
 import akka.stream.ActorMaterializer
 
-import scala.io.StdIn
-
 
 object Server {
   val SERVER_NAME = "conway-life-stream-server"
@@ -30,7 +28,7 @@ object Server {
         }
       }
 
-    val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+    val bindingFuture = Http().newServerAt("0.0.0.0", 8080).bindFlow(route)
   }
 
 }

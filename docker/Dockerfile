@@ -2,6 +2,8 @@ FROM adoptopenjdk/openjdk11:alpine
 
 LABEL maintainer="Fedor Malyshkin"
 
+EXPOSE 8080
+
 RUN mkdir -p /opt/conway-life/
 
 COPY conway-life-stream-server-all.jar /opt/conway-life/
