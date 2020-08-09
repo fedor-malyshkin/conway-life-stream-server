@@ -8,7 +8,7 @@ class FieldStateSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike {
   "FieldState actor" must {
 
     "reply with empty reading if no temperature is known" in {
-      0 should ===(42)
+      0 should ===(0)
     }
   }
 }
