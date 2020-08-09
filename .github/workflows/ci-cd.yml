@@ -53,7 +53,6 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-          context: conwayLifeAKSCluster
       - name: rollup-update-k8s
         if: ${{ github.ref == 'refs/heads/master' }}
         run: kubectl set image deployment/stream-server-deployment conway-life-stream-server=fedormalyshkin/conway-life-stream-server:${{steps.get-short-sha.outputs.sha}}
