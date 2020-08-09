@@ -41,3 +41,16 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: fedormalyshkin/conway-life-stream-server
           tag_with_ref: true
+          tag_with_sha: true
+      - name: get-short-sha # https://github.community/t/substring-function/18401
+        run: |
+          sha=$(echo sha-${{github.sha}} | cut -b-11)
+          echo "::set-output name=sha::$sha"
+      - name: set-k8s-context
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          context: conwayLifeAKSCluster
+      - name: rollup-update-k8s
+        run: kubectl set image deployment/stream-server-deployment conway-life-stream-server=fedormalyshkin/conway-life-stream-server:${{steps.get-short-sha.outputs.sha}}
