@@ -45,8 +45,9 @@ jobs:
       - name: get-short-sha # https://github.community/t/substring-function/18401
         if: ${{ github.ref == 'refs/heads/master' }}
         run: |
-          sha=$(echo sha-${{github.sha}} | cut -b-11)
-          echo "::set-output name=sha::$sha"
+          id=$(echo ${{github.sha}} | cut -b-7)
+          echo "::set-output name=sha::sha-$id"
+        id: get-short-sha-id
       - name: set-k8s-context
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: azure/k8s-set-context@v1
@@ -55,4 +56,4 @@ jobs:
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
       - name: rollup-update-k8s
         if: ${{ github.ref == 'refs/heads/master' }}
-        run: kubectl set image deployment/stream-server-deployment conway-life-stream-server=fedormalyshkin/conway-life-stream-server:${{steps.get-short-sha.outputs.sha}}
+        run: kubectl set image deployment/stream-server-deployment conway-life-stream-server=fedormalyshkin/conway-life-stream-server:${{steps.get-short-sha-id.outputs.sha}}
