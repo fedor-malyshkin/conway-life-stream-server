@@ -1,7 +1,7 @@
 package ru.fedor.conway.life.stream.server
 
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, Behavior, PostStop, Signal}
+import akka.actor.typed.{ActorRef, Behavior}
 import com.typesafe.config.{Config, ConfigFactory}
 import ru.fedor.conway.life.stream.server.Cell.{CellStateActive, CellStateDead}
 import ru.fedor.conway.life.stream.server.FieldController.{FieldControllerMessage, FieldStateGenerated}
@@ -47,11 +47,6 @@ class FieldStateGenerator(context: ActorContext[FieldStateMessage]) extends Abst
         replyTo ! FieldStateGenerated(generateField())
         Behaviors.same
     }
-
-  override def onSignal: PartialFunction[Signal, Behavior[FieldStateMessage]] = {
-    case PostStop =>
-      this
-  }
 
   def generateField(): Map[CellId, Cell.CellState] = {
 

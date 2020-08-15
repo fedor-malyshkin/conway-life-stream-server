@@ -8,7 +8,7 @@ import ru.fedor.conway.life.stream.server.Field.CellStateUpdated
 
 class CellTest extends AnyFlatSpec with Matchers {
 
-  val cellId = CellId(1, 1)
+  private val cellId = CellId(1, 1)
 
   it should "die due underpopulation" in {
     val testable = BehaviorTestKit(Cell(cellId, CellStateActive))
@@ -16,9 +16,9 @@ class CellTest extends AnyFlatSpec with Matchers {
     val inbox = TestInbox[Field.FieldMessage]()
 
     testable.run(Cell.CellStateUpdate(1, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(0), true))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(0), hasChanges = true))
     testable.run(Cell.CellStateUpdate(1, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(1), true))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(1), hasChanges = true))
   }
 
   it should "born in case of 3" in {
@@ -27,9 +27,9 @@ class CellTest extends AnyFlatSpec with Matchers {
     val inbox = TestInbox[Field.FieldMessage]()
 
     testable.run(Cell.CellStateUpdate(3, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, true))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, hasChanges = true))
     testable.run(Cell.CellStateUpdate(3, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, false))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, hasChanges = false))
   }
 
   it should "live in case of 2 or 3" in {
@@ -38,9 +38,9 @@ class CellTest extends AnyFlatSpec with Matchers {
     val inbox = TestInbox[Field.FieldMessage]()
 
     testable.run(Cell.CellStateUpdate(2, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, false))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, hasChanges = false))
     testable.run(Cell.CellStateUpdate(3, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, false))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateActive, hasChanges = false))
   }
 
   it should "die because of overpopulation" in {
@@ -49,9 +49,9 @@ class CellTest extends AnyFlatSpec with Matchers {
     val inbox = TestInbox[Field.FieldMessage]()
 
     testable.run(Cell.CellStateUpdate(4, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(0), true))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(0), hasChanges = true))
     testable.run(Cell.CellStateUpdate(6, inbox.ref))
-    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(1), true))
+    inbox.expectMessage(CellStateUpdated(cellId, CellStateDead(1), hasChanges = true))
   }
 
 }
