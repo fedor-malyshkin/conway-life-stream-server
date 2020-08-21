@@ -70,7 +70,7 @@ dependencies {
 
 	// misc
 	// implementation "com.enragedginger:akka-quartz-scheduler_${SCALA_VER}:${AKKA_QUARTS_VER}"
-	// implementation "io.spray:spray-json_${SCALA_VER}:${SPRAY_JSON_VER}"
+	implementation "io.spray:spray-json_${SCALA_VER}:${SPRAY_JSON_VER}"
 
 	// testing (scala)
 	testImplementation "org.scalatest:scalatest_${SCALA_VER}:${SCALA_TEST_VER}"

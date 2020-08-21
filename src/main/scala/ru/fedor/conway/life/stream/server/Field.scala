@@ -3,7 +3,7 @@ package ru.fedor.conway.life.stream.server
 import java.util.concurrent.TimeUnit
 
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors, TimerScheduler}
-import akka.actor.typed.{ActorRef, Behavior, PostStop, Signal}
+import akka.actor.typed.{ActorRef, Behavior}
 import com.typesafe.config.{Config, ConfigFactory}
 import ru.fedor.conway.life.stream.server.Cell.{CellMessage, CellState, CellStateActive, CellStateDead}
 import ru.fedor.conway.life.stream.server.Field.FieldMessage
@@ -95,13 +95,6 @@ class Field(context: ActorContext[FieldMessage],
         processCellResponse(res)
     }
 
-
-  override def onSignal: PartialFunction[Signal, Behavior[FieldMessage]] = {
-    case PostStop =>
-      context.log.info("Game stopped")
-      this
-  }
-
   def spawnNewCells(fieldState: Map[CellId, CellState]): Map[CellId, ActorRef[CellMessage]] = {
     fieldState.map {
       case (cellId, cellState) =>
@@ -130,7 +123,7 @@ class Field(context: ActorContext[FieldMessage],
 
   def processCellResponse(response: Field.CellStateUpdated): Behavior[FieldMessage] = {
     if (response.hasChanges)
-      supervisor.foreach(_ ! FieldController.FieldStateEvent(response.cellId, response.cellState))
+      supervisor.foreach(_ ! FieldController.FieldStateEvent(response.cellId, response.cellState, GAME_TURN_LIMIT - turnCount))
     unansweredCells = unansweredCells - response.cellId
     updateField(response.cellId, response.cellState)
     hasChangesWithinTurn = hasChangesWithinTurn || response.hasChanges
@@ -140,7 +133,7 @@ class Field(context: ActorContext[FieldMessage],
         stopGame()
       } else {
         supervisor.foreach(_ ! FieldController.GameTurnEnded)
-        context.log.info("The amount of live at the end of the turn: {}", amountOfLive(fieldMap))
+        context.log.info("The amount of live at the end of the turn: {} (left: {})", amountOfLive(fieldMap), GAME_TURN_LIMIT - turnCount)
         Behaviors.same
       }
     } else Behaviors.same
