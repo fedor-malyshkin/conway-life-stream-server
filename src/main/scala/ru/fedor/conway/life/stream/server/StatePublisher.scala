@@ -3,7 +3,6 @@ package ru.fedor.conway.life.stream.server
 import akka.actor.typed
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior, PostStop, Signal}
-import akka.http.scaladsl.model.ws.TextMessage
 import akka.stream.{Materializer, QueueOfferResult}
 import ru.fedor.conway.life.stream.server.Cell.CellState
 import ru.fedor.conway.life.stream.server.FieldController.{FieldControllerMessage, SubscriberAdd}
@@ -113,9 +112,8 @@ class StatePublisher(context: ActorContext[StatePublisherMessage]) extends Abstr
   /**
    * Group in batches keeping existing order and convert batches to TextMessage.
    */
-  def groupInBatches(sq: Seq[FieldControllerMessage]): immutable.Iterable[TextMessage] = {
+  def groupInBatches(sq: Seq[FieldControllerMessage]): immutable.Iterable[String] = {
     groupInBatchesInt(sq).
-      map(listToJson).
-      map(TextMessage(_))
+      map(listToJson)
   }
 }

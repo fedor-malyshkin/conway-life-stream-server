@@ -1,14 +1,15 @@
 package ru.fedor.conway.life.stream.server
 
-import akka.Done
 import akka.actor.typed
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Directives.{complete, concat, handleWebSocketMessages, path}
 import akka.http.scaladsl.{Http, model}
 import akka.stream.scaladsl.{BroadcastHub, Flow, Keep, Sink, Source, SourceQueueWithComplete}
 import akka.stream.{Materializer, OverflowStrategy}
+import akka.util.ByteString
+import akka.{Done, NotUsed}
 import com.typesafe.config.{Config, ConfigFactory}
 import ru.fedor.conway.life.stream.server.Cell.CellState
 import ru.fedor.conway.life.stream.server.FieldController.FieldControllerMessage
@@ -33,11 +34,19 @@ trait HttpEndpoint {
   private val BIND_HOST = conf.getString(s"${Server.CONF_ROOT}.bind-host")
   private val BIND_PORT = conf.getInt(s"${Server.CONF_ROOT}.bind-port")
 
-  private def stream: Flow[Message, Message, Any] = {
-    val source = Source.single(TextMessage(mapToJson(currentState()))).
+  private def streamSource(): Source[String, NotUsed] = {
+    Source.single(mapToJson(currentState())).
       concat(fromProducer).
       buffer(100, OverflowStrategy.dropHead) // we don't want to suffer because of "slow" clients
-    Flow.fromSinkAndSourceCoupled(Sink.ignore, source)
+  }
+
+  private def httpStream: Source[ByteString, NotUsed] = {
+    streamSource().map(s => ByteString(s"$s\n"))
+  }
+
+  private def wsStream: Flow[Message, Message, Any] = {
+    val textMessageSteam = streamSource().map(TextMessage(_))
+    Flow.fromSinkAndSourceCoupled(Sink.ignore, textMessageSteam)
   }
 
   private val route =
@@ -50,8 +59,13 @@ trait HttpEndpoint {
             complete(StatusCodes.InternalServerError, model.HttpEntity("<h1>We have some problem :(</h1>"))
         }
       },
+      path("ws") {
+        handleWebSocketMessages(wsStream)
+      },
       path("stream") {
-        handleWebSocketMessages(stream)
+        Directives.get {
+          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, httpStream))
+        }
       })
 
   private val bindingFuture = Http().newServerAt(BIND_HOST, BIND_PORT).bindFlow(route)
@@ -76,6 +90,6 @@ trait HttpEndpoint {
 
   def currentState(): Map[CellId, CellState]
 
-  def groupInBatches(sq: Seq[FieldControllerMessage]): immutable.Iterable[TextMessage]
+  def groupInBatches(sq: Seq[FieldControllerMessage]): immutable.Iterable[String]
 }
 

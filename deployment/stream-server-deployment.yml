@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stream-server-deployment
+  labels:
+    type: deployment
+    app-type: stream-server
+    side: background
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app-id: conway-life-stream-server
+  template:
+    metadata:
+      labels:
+        app-id: conway-life-stream-server
+        app-type: stream-server
+        side: background
+    spec:
+      containers:
+        - name: conway-life-stream-server
+          image: fedormalyshkin/conway-life-stream-server
+          ports:
+            - name: main-port
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: main-port
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: main-port
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
