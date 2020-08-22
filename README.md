@@ -1,11 +1,58 @@
 ![ci-cd](https://github.com/fedor-malyshkin/conway-life-stream-server/workflows/ci-cd/badge.svg)
 
 # conway-life-stream-server
-Conway's Game of Life Streaming Server (Akka implementation)
+A trivial implementation of Conway's Game of Life with the help of actors. Used technologies:
+* Akka
+* Akka Http
+* Akka Streams (part of Akka itself)
 
+Reference documentation:
+* [Akka](https://doc.akka.io/docs/akka/current/)
+* [Akka Http](https://doc.akka.io/docs/akka-http/current/)
 
-## Hierarchy of actors
+After the start application starts to publish its state and events as an infinite stream from endpoint `/stream` or as WebSocket stream from `/ws`.
+
+## Compilation and run
+As a build tool I user [gradle](https://gradle.org/) and `gradle-wrapper`, so you can easily compile and build 
+application with `./gradle build` and run with `./gradle run`.
+
+## Tests
+For the tests I used [ScalaTest](https://www.scalatest.org/) and Akka native libraries. The tests can be run by the command `./gradlew scalaTest`.
+
+## CI/CD
+For integration and deployment was used GitHub's framework - GitHub Actions. Workflow is available [there](.github/workflows/ci-cd.yml)
+
+## Deployment 
+For deployment was used Kubernetes cluster from Azure - the most cheapest one from the cloud providers.
+Nice source of info related to cloud provider prices - [Managed Kubernetes Price Comparison (2020)](https://devopsdirective.com/posts/2020/03/managed-kubernetes-comparison/)
+
+Deployment descriptors are available in `deployment` sub-folder.
+
+### Sample Azure deployment:
+Create the resource group:
+```sh
+az group create --name conwayLifeResourceGroup --location eastus
+```
+Create a cluster (it could take some time):
+```sh
+az aks create --resource-group conwayLifeResourceGroup --name conwayLifeAKSCluster --node-count 1  --node-vm-size Standard_B2s --enable-addons monitoring --generate-ssh-keys
+```
+
+Get credentials and check functionality:
+```sh
+az aks get-credentials --resource-group conwayLifeResourceGroup --name conwayLifeAKSCluster
+kubectl get nodes
+```
+Don't forget to store the credentials to future use.
+
+Rolling update is done by command: `kubectl set image deployment/stream-server-deployment conway-life-stream-server=XXXX`
+
+## Some implementation info
+For this app used fresh enough feature of akka - typed actors (in fact not absolutely fresh,
+bet has been published officially recently).
+
+### Hierarchy of actors
 ![hierarchy](docs/images/hierarchy.png)
-    
-## Actor interaction
+
+### Actor interaction
 ![interaction](docs/images/interaction.png)

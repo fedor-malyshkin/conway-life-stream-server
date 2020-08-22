@@ -42,6 +42,7 @@ buildscript {
 	}
 }
 
+apply plugin: 'application'
 apply plugin: 'scala'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: "com.github.maiflai.scalatest"
@@ -49,6 +50,12 @@ apply plugin: "com.github.maiflai.scalatest"
 repositories {
 	mavenCentral()
 	mavenLocal()
+}
+
+mainClassName = "ru.fedor.conway.life.stream.server.Server"
+
+application {
+	mainClass = mainClassName
 }
 
 dependencies {
@@ -77,9 +84,6 @@ dependencies {
 	testImplementation "org.scalamock:scalamock_${SCALA_VER}:${SCALA_MOCK_VER}"
 	testImplementation 'com.vladsch.flexmark:flexmark-all:0.35.10'
 }
-
-
-def mainClassName = "ru.fedor.conway.life.stream.server.Server"
 
 shadowJar {
 	// https://doc.akka.io/docs/akka/current/additional/packaging.html#gradle-the-jar-task-from-the-java-plugin
