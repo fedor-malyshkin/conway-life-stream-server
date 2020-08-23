@@ -14,7 +14,7 @@ After the start application starts to publish its state and events as an infinit
 
 ## Compilation and run
 As a build tool I user [gradle](https://gradle.org/) and `gradle-wrapper`, so you can easily compile and build 
-application with `./gradle build` and run with `./gradle run`.
+application with `./gradlew build` and run with `./gradlew run`.
 
 ## Tests
 For the tests I used [ScalaTest](https://www.scalatest.org/) and Akka native libraries. The tests can be run by the command `./gradlew scalaTest`.
