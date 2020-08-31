@@ -69,6 +69,7 @@ class Cell(context: ActorContext[CellMessage], cellId: CellId,
 
       cellState = result._1
       replyTo ! CellStateUpdated(cellId, result._1, result._2)
+      context.log.debug("Cell {} new state: {} because of neighbour count {}", cellId, cellState, neighbourCount)
       Behaviors.same
   }
 

@@ -4,6 +4,7 @@ import akka.actor.typed
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior, PostStop, Signal}
 import akka.stream.{Materializer, QueueOfferResult}
+import org.slf4j.Logger
 import ru.fedor.conway.life.stream.server.Cell.CellState
 import ru.fedor.conway.life.stream.server.FieldController.{FieldControllerMessage, SubscriberAdd}
 import ru.fedor.conway.life.stream.server.StatePublisher.StatePublisherMessage
@@ -33,8 +34,10 @@ object StatePublisher {
         Map.empty
       case FieldController.GameTurnEnded =>
         currentState
-      case FieldController.FieldStateEvent(cellId, cellState, _) =>
+      case FieldController.FieldStateEvent(cellId, cellState, _, _) =>
         currentState + (cellId -> cellState)
+      case FieldController.FieldStateGenerated(fieldState) =>
+        Map.from(fieldState)
       case _ =>
         currentState
     }
@@ -65,7 +68,9 @@ class StatePublisher(context: ActorContext[StatePublisherMessage]) extends Abstr
 
   import ru.fedor.conway.life.stream.server.StatePublisher._
 
-  var currentState: Map[CellId, CellState] = Map.empty
+  private var currentState: Map[CellId, CellState] = Map.empty
+
+  val log: Logger = context.log
 
   def actorSystem: typed.ActorSystem[Nothing] = context.system
 
@@ -86,13 +91,13 @@ class StatePublisher(context: ActorContext[StatePublisherMessage]) extends Abstr
   override def onMessage(msg: StatePublisherMessage): Behavior[StatePublisherMessage] =
     msg match {
       case WrapperStatePublisherMessage(msg) =>
-        // context.log.debug(s"Got event: $msg")
         healthy(true) // the first notification could be considered as an successful start
         msg match {
           case FieldController.GameEnded |
                FieldController.GameStart |
                FieldController.GameTurnEnded |
-               FieldController.FieldStateEvent(_, _, _) =>
+               FieldController.FieldStateGenerated(_) |
+               FieldController.FieldStateEvent(_, _, _, _) =>
             currentState = aggregateState(msg, currentState)
             pushMessageToStream(msg)
           case _ =>
@@ -112,8 +117,10 @@ class StatePublisher(context: ActorContext[StatePublisherMessage]) extends Abstr
   /**
    * Group in batches keeping existing order and convert batches to TextMessage.
    */
-  def groupInBatches(sq: Seq[FieldControllerMessage]): immutable.Iterable[String] = {
+  def groupInBatches(sq: Seq[FieldControllerMessage]): immutable.Iterable[String] =
     groupInBatchesInt(sq).
       map(listToJson)
-  }
+
+  // !! called from async thread - but we use immutable collection
+  override def currentSnapshot(): Map[CellId, CellState] = currentState
 }

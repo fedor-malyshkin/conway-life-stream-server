@@ -65,9 +65,9 @@ class FieldTest extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matc
       testable ! Field.GameStart(testField, probe.ref)
       val messages = probe.receiveMessages(21)
       messages should have size(21)
-      messages.head shouldBe FieldStateEvent(CellId(1, 1), CellStateDead(0), 999)
+      messages.head shouldBe FieldStateEvent(CellId(1, 1), CellStateDead(0), 1, 499)
       messages(1) shouldBe GameTurnEnded
-      messages(18) shouldBe FieldStateEvent(CellId(1, 1), CellStateDead(9), 990)
+      messages(18) shouldBe FieldStateEvent(CellId(1, 1), CellStateDead(9), 10, 490)
       messages(19) shouldBe GameTurnEnded
       messages(20) shouldBe GameEnded
     }

@@ -81,7 +81,6 @@ class Field(context: ActorContext[FieldMessage],
 
   var turnCount = 0
 
-
   override def onMessage(msg: FieldMessage): Behavior[FieldMessage] =
     msg match {
       case Field.GameStart(fieldState, replyTo) =>
@@ -105,7 +104,6 @@ class Field(context: ActorContext[FieldMessage],
 
   def startGameTurn(): Unit = {
     if (unansweredCells.isEmpty) { // only in case if processed every cell by this time
-      context.log.debug("Game turn started")
       context.log.debug("The amount of live at the beginning of the turn: {}", amountOfLive(fieldMap))
 
       turnCount += 1
@@ -116,14 +114,16 @@ class Field(context: ActorContext[FieldMessage],
   def processGameTurn(): Unit = {
     hasChangesWithinTurn = false
     unansweredCells = Set.from(cellsMap.keys)
+    // make snapshot - as could be changed during calling all cells
+    val staticMap = Map.from(fieldMap)
     cellsMap.foreach {
-      case (cellId, ref) => ref ! Cell.CellStateUpdate(calculateNeighbourCount(cellId, fieldMap), context.self)
+      case (cellId, ref) => ref ! Cell.CellStateUpdate(calculateNeighbourCount(cellId, staticMap), context.self)
     }
   }
 
   def processCellResponse(response: Field.CellStateUpdated): Behavior[FieldMessage] = {
     if (response.hasChanges)
-      supervisor.foreach(_ ! FieldController.FieldStateEvent(response.cellId, response.cellState, GAME_TURN_LIMIT - turnCount))
+      supervisor.foreach(_ ! FieldController.FieldStateEvent(response.cellId, response.cellState, turnCount, turnsLeft))
     unansweredCells = unansweredCells - response.cellId
     updateField(response.cellId, response.cellState)
     hasChangesWithinTurn = hasChangesWithinTurn || response.hasChanges
@@ -133,11 +133,14 @@ class Field(context: ActorContext[FieldMessage],
         stopGame()
       } else {
         supervisor.foreach(_ ! FieldController.GameTurnEnded)
-        context.log.info("The amount of live at the end of the turn: {} (left: {})", amountOfLive(fieldMap), GAME_TURN_LIMIT - turnCount)
+        context.log.debug("The amount of live at the end of the turn: {} (left: {})", amountOfLive(fieldMap), turnsLeft)
+        context.log.trace("Internal state at the end: {}", fieldMap)
         Behaviors.same
       }
     } else Behaviors.same
   }
+
+  def turnsLeft: Int = GAME_TURN_LIMIT - turnCount
 
   def startTimer(): Unit = timers.startTimerAtFixedRate(Field.GameTurnStart, GAME_TURN_DURATION)
 
