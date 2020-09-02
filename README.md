@@ -12,6 +12,9 @@ Reference documentation:
 
 After its start the application will start to publish events as an infinite HTTP-stream from endpoint `/stream` or as WebSocket-stream from `/ws`.
 
+## Client
+Could be found in another repo - [conway-life-stream-web-client](https://github.com/fedor-malyshkin/conway-life-stream-web-client)
+
 ## Compilation and run
 As a build tool I user [gradle](https://gradle.org/) and `gradle-wrapper`, so you can easily compile and build 
 application with `./gradle build` and run with `./gradle run`.
