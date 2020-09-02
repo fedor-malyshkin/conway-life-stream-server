@@ -24,6 +24,7 @@ object FieldStateGenerator {
   private val FIELD_WIDTH = conf.getInt(s"${Server.CONF_ROOT}.game.field-width")
   private val FIELD_HEIGHT = conf.getInt(s"${Server.CONF_ROOT}.game.field-height")
   private val FIELD_INITIAL_SEED_COUNT = conf.getInt(s"${Server.CONF_ROOT}.game.field-initial-seed-count")
+  private val DEAD_TRACK_LENGTH = conf.getInt(s"${Server.CONF_ROOT}.game.dead-track-history")
 
   @tailrec
   def unfold(cellId: CellId, acc: List[CellId]): List[CellId] = {
@@ -59,7 +60,7 @@ class FieldStateGenerator(context: ActorContext[FieldStateMessage]) extends Abst
       toSet
 
     val cellValues = Range.apply(0, FIELD_WIDTH * FIELD_HEIGHT).
-      map { ndx => if (randomIndexes.contains(ndx)) CellStateActive else CellStateDead(0) }
+      map { ndx => if (randomIndexes.contains(ndx)) CellStateActive else CellStateDead(DEAD_TRACK_LENGTH) }
 
     Map.from(cellIds.zip(cellValues))
   }

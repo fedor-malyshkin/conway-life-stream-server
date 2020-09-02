@@ -43,6 +43,7 @@ class FieldController(context: ActorContext[FieldControllerMessage],
   override def onMessage(msg: FieldControllerMessage): Behavior[FieldControllerMessage] =
     msg match {
       case FieldController.SubscriberAdd(subscriber) =>
+        context.self ! FieldController.GameStart
         new FieldController(context, field, fieldStateGenerator, subscribers + subscriber)
       case FieldController.GameStart | FieldController.GameEnded =>
         subscribers.foreach(_ ! msg)
