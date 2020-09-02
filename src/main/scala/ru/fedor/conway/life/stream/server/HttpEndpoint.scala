@@ -11,9 +11,11 @@ import akka.stream.{Materializer, OverflowStrategy}
 import akka.util.ByteString
 import akka.{Done, NotUsed}
 import com.typesafe.config.{Config, ConfigFactory}
+import org.slf4j.Logger
 import ru.fedor.conway.life.stream.server.Cell.CellState
 import ru.fedor.conway.life.stream.server.FieldController.FieldControllerMessage
 
+import scala.List
 import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
@@ -34,18 +36,24 @@ trait HttpEndpoint {
   private val BIND_HOST = conf.getString(s"${Server.CONF_ROOT}.bind-host")
   private val BIND_PORT = conf.getInt(s"${Server.CONF_ROOT}.bind-port")
 
+  def overflowStrategy: OverflowStrategy = OverflowStrategy.dropHead
+
   private def streamSource(): Source[String, NotUsed] = {
-    Source.single(mapToJson(currentState())).
+    Source.single(mapToJson(currentSnapshot())).
       concat(fromProducer).
-      buffer(100, OverflowStrategy.dropHead) // we don't want to suffer because of "slow" clients
+      buffer(100, overflowStrategy) // we don't want to suffer because of "slow" clients
   }
 
   private def httpStream: Source[ByteString, NotUsed] = {
-    streamSource().map(s => ByteString(s"$s\n"))
+    streamSource().
+      wireTap(msg => log().trace(s"Sent to HTTP client: $msg")).
+      map(s => ByteString(s"$s\n"))
   }
 
   private def wsStream: Flow[Message, Message, Any] = {
-    val textMessageSteam = streamSource().map(TextMessage(_))
+    val textMessageSteam = streamSource().
+      wireTap(msg => log().trace(s"Sent to WS client: $msg")).
+      map(TextMessage(_))
     Flow.fromSinkAndSourceCoupled(Sink.ignore, textMessageSteam)
   }
 
@@ -70,7 +78,7 @@ trait HttpEndpoint {
 
   private val bindingFuture = Http().newServerAt(BIND_HOST, BIND_PORT).bindFlow(route)
 
-  private val queueSource = Source.queue[FieldControllerMessage](1024, OverflowStrategy.fail).
+  private val queueSource = Source.queue[FieldControllerMessage](10240, overflowStrategy).
     groupedWithin(100, 500 milli). // we don't want overload clients by messages
     mapConcat(sq => groupInBatches(sq)) //... so we group them into composite message
 
@@ -88,7 +96,9 @@ trait HttpEndpoint {
 
   def unbind(): Future[Done] = Await.ready(bindingFuture.flatMap(_.unbind()), 2.second)
 
-  def currentState(): Map[CellId, CellState]
+  def currentSnapshot(): Map[CellId, CellState]
+
+  def log(): Logger
 
   def groupInBatches(sq: Seq[FieldControllerMessage]): immutable.Iterable[String]
 }

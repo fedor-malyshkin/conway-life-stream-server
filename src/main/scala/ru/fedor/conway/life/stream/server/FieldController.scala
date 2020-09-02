@@ -22,7 +22,7 @@ object FieldController {
 
   case class FieldStateGenerated(fieldState: Map[CellId, CellState]) extends FieldControllerMessage
 
-  case class FieldStateEvent(cellId: CellId, cellState: CellState, stepLeft: Int = 0) extends FieldControllerMessage
+  case class FieldStateEvent(cellId: CellId, cellState: CellState, turnNo: Int = 0, stepLeft: Int = 0) extends FieldControllerMessage
 
   def apply(): Behavior[FieldControllerMessage] =
     Behaviors.setup[FieldControllerMessage] { context =>
@@ -49,13 +49,14 @@ class FieldController(context: ActorContext[FieldControllerMessage],
         fieldStateGenerator ! FieldStateGenerate(context.self)
         Behaviors.same
       case FieldStateGenerated(fieldState) =>
+        subscribers.foreach(_ ! msg)
         val newField = createField(context)
         newField ! GameStart(fieldState, context.self)
         new FieldController(context, newField, fieldStateGenerator, subscribers)
       case FieldController.GameTurnEnded =>
         subscribers.foreach(_ ! msg)
         Behaviors.same
-      case FieldController.FieldStateEvent(_, _, _) =>
+      case FieldController.FieldStateEvent(_, _,_, _) =>
         subscribers.foreach(_ ! msg)
         Behaviors.same
     }

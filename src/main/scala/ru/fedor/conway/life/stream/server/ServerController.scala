@@ -28,8 +28,8 @@ class ServerController(context: ActorContext[ServerControllerMessage],
 
   context.log.info(s"${Server.SERVER_NAME} started")
 
-  fieldController ! GameStart
   statePublisher ! FieldControllerSubscribe(fieldController)
+  fieldController ! GameStart
 
   override def onMessage(msg: ServerControllerMessage): Behavior[ServerControllerMessage] =
     msg match {

@@ -1,7 +1,7 @@
 package ru.fedor.conway.life.stream.server
 
 import ru.fedor.conway.life.stream.server.Cell.{CellState, CellStateActive, CellStateDead}
-import ru.fedor.conway.life.stream.server.FieldController.{FieldControllerMessage, FieldStateEvent}
+import ru.fedor.conway.life.stream.server.FieldController.{FieldControllerMessage, FieldStateEvent, FieldStateGenerated}
 import spray.json.{DefaultJsonProtocol, JsArray, JsNumber, JsObject, JsString, JsValue, RootJsonFormat} // if you don't supply your own Protocol (see below)
 
 object CellIdJsonProtocol extends DefaultJsonProtocol {
@@ -90,16 +90,19 @@ trait ToJsonSerializer {
       JsObject("type" -> JsString("game-start")).compactPrint
     case FieldController.GameTurnEnded =>
       JsObject("type" -> JsString("game-turn-ended")).compactPrint
-    case FieldController.FieldStateEvent(_, _, stepLeft) =>
+    case FieldController.FieldStateEvent(_, _, turnNo, stepLeft) =>
       JsObject("type" -> JsString("field-event"),
         "steps-left" -> JsNumber(stepLeft),
+        "turn-number" -> JsNumber(turnNo),
         "data" -> JsArray(l.map(eventToJson).toVector)).compactPrint
+    case FieldStateGenerated(fieldState) =>
+      mapToJson(fieldState)
     case _ =>
       throw new IllegalStateException()
   }
 
   def eventToJson(event: FieldControllerMessage): JsValue = event match {
-    case FieldStateEvent(cellId, cellState, stepsLeft) => tupleToJsValue((cellId, cellState))
+    case FieldStateEvent(cellId, cellState, _, _) => tupleToJsValue((cellId, cellState))
     case _ =>
       throw new IllegalStateException()
   }
