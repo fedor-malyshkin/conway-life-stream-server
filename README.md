@@ -39,7 +39,7 @@ az group create --name conwayLifeResourceGroup --location eastus
 ```
 Create a cluster (it could take some time):
 ```sh
-az aks create --resource-group conwayLifeResourceGroup --name conwayLifeAKSCluster --node-count 1  --node-vm-size Standard_B2s --enable-addons monitoring --generate-ssh-keys
+az aks create --resource-group conwayLifeResourceGroup --name conwayLifeAKSCluster --node-count 1  --node-vm-size Standard_B2s  --generate-ssh-keys
 ```
 
 Get credentials and check functionality:
@@ -49,7 +49,27 @@ kubectl get nodes
 ```
 Don't forget to store the credentials to future use.
 
-Rolling update is done by command: `kubectl set image deployment/stream-server-deployment conway-life-stream-server=XXXX`
+The initial deployment is done by the commands (in `deployment` sub-folder):
+```sh
+kubectl apply -f stream-server-deployment.yml
+kubectl apply -f stream-server-service.yml
+kubectl apply -f stream-server-loadbalancer.yml
+```
+
+The assigned IP can be found with the command:
+```sh
+kubectl describe service/stream-server-loadbalancer | egrep Ingress
+```
+
+And the correctness of work with the command:
+```sh
+curl http://<IP>/health
+```
+or simple open that url in you browser.
+You should get something like this `<h1>Everything is fine :)</h1>`
+
+Rolling update is done by the command: `kubectl set image deployment/stream-server-deployment conway-life-stream-server=XXXX`,
+where XXX is image name (i.e. `fedormalyshkin/conway-life-stream-server`)
 
 ## Some implementation info
 For this app used fresh enough feature of akka - typed actors (in fact not absolutely fresh,
