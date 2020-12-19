@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew scalatest
       - name: build-and-push-docker-image
         if: ${{ github.ref == 'refs/heads/master' }}
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v2
         with:
           push: true
           dockerfile: docker/Dockerfile
