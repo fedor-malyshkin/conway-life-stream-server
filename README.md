@@ -1,12 +1,22 @@
+# conway-life-stream-server
 ![ci-cd](https://github.com/fedor-malyshkin/conway-life-stream-server/workflows/ci-cd/badge.svg)
 
-# conway-life-stream-server
-A trivial implementation of Conway's Game of Life with the help of actors. Used technologies:
+## Overview
+A trivial implementation of Conway's Game of Life with the help of actors with publishing resulting state in WebSocket 
+connection and in HTTP stream. Basically it creates something like this:
+
+![field](docs/images/field.gif)
+
+## Articles
+* [Conway’s Game of Life streaming with Akka Streams](https://fedor-malyshkin.medium.com/conways-game-of-life-streaming-with-akka-streams-abddb9773d48)
+* [GitHub Actions to build your Java/Scala application, test and deploy it to Kubernetes cluster](https://levelup.gitconnected.com/github-actions-to-build-your-java-scala-application-test-and-deploy-it-to-kubernetes-cluster-484779dfc200)
+
+## Used technologies
 * Akka
 * Akka Http
 * Akka Streams (part of Akka itself)
 
-Reference documentation:
+### Reference documentation:
 * [Akka](https://doc.akka.io/docs/akka/current/)
 * [Akka Http](https://doc.akka.io/docs/akka-http/current/)
 
@@ -16,7 +26,7 @@ After its start the application will start to publish events as an infinite HTTP
 Could be found in another repo - [conway-life-stream-web-client](https://github.com/fedor-malyshkin/conway-life-stream-web-client)
 
 ## Compilation and run
-As a build tool I user [gradle](https://gradle.org/) and `gradle-wrapper`, so you can easily compile and build 
+As a build tool I use [gradle](https://gradle.org/) and `gradle-wrapper`, so you can easily compile and build 
 application with `./gradlew build` and run with `./gradlew run`.
 
 ## Tests
@@ -61,7 +71,7 @@ The assigned IP can be found with the command:
 kubectl describe service/stream-server-loadbalancer | egrep Ingress
 ```
 
-And the correctness of work with the command:
+Whereas the correctness of work with the command:
 ```sh
 curl http://<IP>/health
 ```
